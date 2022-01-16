@@ -1,9 +1,9 @@
 //entry point file  , env var / database config ...
 
 const mongoose = require('mongoose')
-const dotenv=require('dotenv');
+const dotenv=require('dotenv'); // .env
 dotenv.config({path :'./config.env'})
-const app= require("./app")
+const app= require("./app")  
 
 
 const DB = process.env.DATABASE.replace('<PASSWORD>',process.env.DATABASE_PASSWORD)
