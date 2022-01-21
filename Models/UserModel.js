@@ -51,6 +51,14 @@ userSchema.pre('save', async function(next){
     next()
 })
 
+userSchema.pre('save',  function(next){
+   
+    if(this.isModified('password')&& !this.isNew){
+        this.passwordChangedAt=Date.now()-1500 // we substract  seconds to make sure tht the token is alaways created after the paswword have been changer
+    }  
+    next()
+})
+
 //instance method is a method availabe on all documents of a collection
 userSchema.methods.correctPassword= async function(candidatePassword,userPassword){ //we pass user password beaxause we can't use this.password bcause select is set false
  return await bcrypt.compare(candidatePassword,userPassword)//compares password even 1 is a hash and 2 is a string
