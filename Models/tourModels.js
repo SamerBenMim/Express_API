@@ -72,7 +72,7 @@ tourSchema.virtual('durationWeeks').get(function(){
 tourSchema.pre('save',function(next){
     console.log('this',this)
 
-this.slug = slugify(this.name, {lower :true}  ) ; next()
+this.slug = sluguify(this.name, {lower :true}  ) ; next()
 //this is the processed document
 }) //pre acts before an events (save here) and create
 
