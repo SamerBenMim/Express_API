@@ -40,7 +40,12 @@ const userSchema = new mongoose.Schema({
 
     passwordChangedAt: Date,
     PasswordResetToken:String,
-    PasswordResetExpires: Date
+    PasswordResetExpires: Date,
+    active:{
+        type:Boolean,
+        default:true,
+        select:false
+    }
 
 })
 userSchema.pre('save', async function(next){
@@ -72,6 +77,12 @@ userSchema.methods.changedPasswordAfter=  function(JWTTimestamp){ //we pass deco
     }
     return false
 }
+userSchema.pre(/^find/,function(next){
+//this pint to the current query
+this.find({active:{$ne: false}});
+next()
+
+})
 
 userSchema.methods.createPasswordResetToken=function(){
     const resetToken = crypto.randomBytes(32).toString('hex');//create random token
@@ -87,3 +98,4 @@ userSchema.methods.createPasswordResetToken=function(){
 }
 const User = mongoose.model('User',userSchema) /* for the adequat collection Mongoose automatically looks for the plural, lowercased version of your model name.*///model var starts with a Capital letter // cree unmodel dont le nom est user et son model et le model userschema declare au debut
 module.exports = User;
+

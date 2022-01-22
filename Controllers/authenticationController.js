@@ -4,7 +4,8 @@ const catchAsync = require("./../Utils/catchAsync")
 const User = require('./../Models/UserModel')
 const jwt = require('jsonwebtoken') 
 const AppError=require('./../Utils/appError')
-const sendEmail=require('./../Utils/email')
+const sendEmail=require('./../Utils/email');
+const { findOne } = require('./../Models/UserModel');
 
 const generateToken = id =>{
   return  jwt.sign({id},process.env.JWT_SECRET,{
@@ -12,6 +13,19 @@ const generateToken = id =>{
     })   
 
 }
+
+const createSendToken = (user,statusCode,res)=>{
+    const token = generateToken(user._id)
+    res.status(statusCode).json({
+        status:'success',
+        token,
+        data:{
+            user 
+        }
+    })
+}
+
+
 
 exports.signup = catchAsync(async(req,res ,next)=>{
 
@@ -35,14 +49,8 @@ exports.signup = catchAsync(async(req,res ,next)=>{
            // passwordChangedAt:req.body.passwordChangedAt
         })
     }
-    const token = generateToken(newUser._id)
-    res.status(201).json({
-        status:'success',
-        token,
-        data:{
-            user: newUser 
-        }
-    })
+    createSendToken(newUser,201,res)
+
 })
 
 exports.login= catchAsync(async (req,res,next)=>{
@@ -60,7 +68,9 @@ exports.login= catchAsync(async (req,res,next)=>{
         return next(new AppError('Incorrect email or password',401))
     }
    
-    //4) send token to client 
+    //4) send token to client
+    createSendToken(user,200,res)
+ 
     const token=generateToken(user._id);
     res.status(200).json({
         status:'success',
@@ -171,10 +181,27 @@ exports.resetPassword = catchAsync( async(req,res,next)=>{
     // 3) update changed passwordat
 
     // 4) log the user in ,send JWT
-    const token = generateToken(user._id)
-    res.status(200).json({
-        status:'success',
-        token,
-       
-    })
+    createSendToken(user,200,res)
+
+})
+
+exports.updatePassword = catchAsync(async(req,res,next)=>{
+    //1) get the user from collection
+    user=await User.findById(req.user.id).select('+password');   
+    //2)check pass
+    if (! (await user.correctPassword(req.body.passwordCurrent,user.password)))
+    {
+        return next( new AppError('Your current password is wrong.',401))
+    }
+
+    //3) update pass
+    user.password=req.body.password
+    user.passwordConfirm=req.body.passwordConfirm;
+    await user.save();
+                        //user.findbyid and update does not work this does not work && presave middmeware does not work
+
+    //4)log user in, send JWT 
+    createSendToken(user,200,res)
+
+
 })

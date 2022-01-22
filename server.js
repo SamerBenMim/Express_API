@@ -9,6 +9,7 @@ const dotenv=require('dotenv'); // .env
 process.on('uncaughtException',err=>{
     console.log("unhandled Exception ,shutting down",err.name,err.message)
     console.log(err)
+    if(server)
     server.close(()=>{
     process.exit(1); // we should terminate the app because instable state
    }) 
@@ -29,7 +30,7 @@ useUnifiedTopology: true
 })
 
 
-const server = app.listen(process.env.PORT,()=>{
+var server = app.listen(process.env.PORT,()=>{
     console.log('app running on port '+ process.env.PORT);
 });
 
